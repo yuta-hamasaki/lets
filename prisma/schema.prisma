@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id                  Int                @id @default(autoincrement())
+  userId              String             @unique
+  email               String             @unique
+  nickname            String
+  fullname            String
+  university          String
+  faculty             String
+  grade               String
+  desc                String?
+  hobbies             String?
+  skills              String?
+  portfolioUrl        String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  chatMessages        ChatMessage[]
+  memberships         CircleMembership[]
+  circlePosts         CirclePost[]
+  receivedFriendships Friendship[]       @relation("ReceivedFriendships")
+  sentFriendships     Friendship[]       @relation("SentFriendships")
+  postLikes           PostLike[]
+  postReplies         PostReply[]
+  snsLinks            SnsLink[]
+}
+
+model SnsLink {
+  id       String      @id @default(uuid())
+  platform SnsPlatform
+  url      String
+  userId   Int
+  user     Profile     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Friendship {
+  id          String           @id @default(uuid())
+  requesterId Int
+  addresseeId Int
+  status      FriendshipStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  addressee   Profile          @relation("ReceivedFriendships", fields: [addresseeId], references: [id])
+  requester   Profile          @relation("SentFriendships", fields: [requesterId], references: [id])
+
+  @@unique([requesterId, addresseeId])
+}
+
+model Circle {
+  id             String             @id @default(uuid())
+  name           String
+  description    String?
+  headerImageUrl String?
+  category       String
+  createdAt      DateTime           @default(now())
+  members        CircleMembership[]
+  posts          CirclePost[]
+  chatRooms      chatRoom[]
+}
+
+model chatRoom {
+  id        String        @id @default(uuid())
+  title     String
+  circleId  String
+  createdAt DateTime      @default(now())
+  messages  ChatMessage[]
+  circle    Circle        @relation(fields: [circleId], references: [id])
+}
+
+model ChatMessage {
+  id         String   @id @default(uuid())
+  content    String
+  senderId   Int
+  chatRoomId String
+  createdAt  DateTime @default(now())
+  chatRoom   chatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  sender     Profile  @relation(fields: [senderId], references: [id])
+
+  @@index([chatRoomId, createdAt])
+}
+
+model CircleMembership {
+  id       String     @id @default(uuid())
+  userId   Int
+  circleId String
+  role     CircleRole @default(MEMBER)
+  joinedAt DateTime   @default(now())
+  circle   Circle     @relation(fields: [circleId], references: [id])
+  user     Profile    @relation(fields: [userId], references: [id])
+
+  @@unique([userId, circleId])
+}
+
+model CirclePost {
+  id        String      @id @default(uuid())
+  content   String
+  authorId  Int
+  circleId  String
+  createdAt DateTime    @default(now())
+  author    Profile     @relation(fields: [authorId], references: [id])
+  circle    Circle      @relation(fields: [circleId], references: [id])
+  likes     PostLike[]
+  replies   PostReply[]
+}
+
+model PostLike {
+  id        String     @id @default(uuid())
+  userId    Int
+  postId    String
+  createdAt DateTime   @default(now())
+  post      CirclePost @relation(fields: [postId], references: [id])
+  user      Profile    @relation(fields: [userId], references: [id])
+
+  @@unique([userId, postId])
+}
+
+model PostReply {
+  id        String     @id @default(uuid())
+  content   String
+  authorId  Int
+  postId    String
+  createdAt DateTime   @default(now())
+  author    Profile    @relation(fields: [authorId], references: [id])
+  post      CirclePost @relation(fields: [postId], references: [id])
+}
+
+enum SnsPlatform {
+  INSTAGRAM
+  TWITTER
+  LINE
+  SNAPCHAT
+  OTHER
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  BLOCKED
+}
+
+enum CircleRole {
+  ADMIN
+  MEMBER
+}

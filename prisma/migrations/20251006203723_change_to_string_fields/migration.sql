@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "public"."Profile" ALTER COLUMN "hobbies" DROP NOT NULL,
+ALTER COLUMN "hobbies" SET DATA TYPE TEXT,
+ALTER COLUMN "skills" DROP NOT NULL,
+ALTER COLUMN "skills" SET DATA TYPE TEXT;
