@@ -76,12 +76,6 @@ SKIP_EMAIL_SEND=true
 - 本番移行時は、Neon Auth / Stack Auth の「Authentication domain」を本番ドメインに更新してください
 - 既定の保護ルートは `middleware.ts` で `/dashboard` と `/billing`。未ログイン時は `/auth/signup` へリダイレクト
 
-### 決済（Stripe）
-
-1. ダッシュボードで API キー取得 → `.env` に設定
-2. 商品/価格（継続・毎月）を作成し、`STRIPE_PRICE_ID` を設定
-3. Webhook を設定（エンドポイント: `/api/stripe/webhook`）
-   - 利用イベント: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_succeeded`, `invoice.payment_failed`
 4. ローカル開発（Stripe CLI）
 
 
@@ -106,5 +100,4 @@ SKIP_EMAIL_SEND=true
 
 - **DB 接続失敗**: `.env` の `DATABASE_URL` を確認。`?sslmode=require` を付与。`npx prisma migrate reset` で再作成
 - **認証が機能しない**: Neon Auth の 3 変数を設定。ブラウザの Cookie を有効に
-- **Stripe 失敗**: Price ID/キーのテスト/本番モード整合、Webhook 設定、`STRIPE_WEBHOOK_SECRET` を確認。ローカルは `stripe listen` を実行
 - **メール未送信**: 開発はアカウント宛のみ送信可。`RESEND_API_KEY` とログを確認。必要なら `SKIP_EMAIL_SEND=true`
