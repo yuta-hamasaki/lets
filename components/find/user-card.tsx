@@ -1,8 +1,9 @@
+"use client"
 import React, { useState, useRef } from 'react';
 import { ThumbsUp, MoreVertical } from 'lucide-react';
 
 
-export const UserCard = ({ user, onReport, onSendLike }) => {
+export const UserCard = ({ user, onReport, onSendLike }:any) => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [guts, setGuts] = useState([]);
     const cardRef = useRef(null);
