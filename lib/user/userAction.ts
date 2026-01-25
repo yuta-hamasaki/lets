@@ -54,52 +54,61 @@ export async function createProfile(input: CreateProfileInput) {
     }
 
     const email = input.email ?? `${input.userId}@lets.local`
+    const data = {
+      nickname: input.nickname.trim(),
+      fullname: input.fullname.trim(),
+      university: input.university.trim(),
+      faculty: input.faculty.trim(),
+      grade: input.grade.trim(),
+      desc: input.desc.trim(),
+      hobbies: input.hobbies?.trim() || null,
+      skills: input.skills?.trim() || null,
+      portfolioUrl: input.portfolioUrl?.trim() || null,
+    }
 
-    const created = await prisma.profile.upsert({
+    const existing = await prisma.profile.findUnique({
       where: { userId: input.userId },
-      create: {
-        userId: input.userId,
-        email,
-        nickname: input.nickname.trim(),
-        fullname: input.fullname.trim(),
-        university: input.university.trim(),
-        faculty: input.faculty.trim(),
-        grade: input.grade.trim(),
-        desc: input.desc.trim(),
-        hobbies: input.hobbies?.trim() || null,
-        skills: input.skills?.trim() || null,
-        portfolioUrl: input.portfolioUrl?.trim() || null,
-      },
-      update: {
-        nickname: input.nickname.trim(),
-        fullname: input.fullname.trim(),
-        university: input.university.trim(),
-        faculty: input.faculty.trim(),
-        grade: input.grade.trim(),
-        desc: input.desc.trim(),
-        hobbies: input.hobbies?.trim() || null,
-        skills: input.skills?.trim() || null,
-        portfolioUrl: input.portfolioUrl?.trim() || null,
-      },
     })
+
+    let profile
+    if (existing) {
+      profile = await prisma.profile.update({
+        where: { userId: input.userId },
+        data,
+      })
+    } else {
+      const emailTaken = await prisma.profile.findUnique({
+        where: { email },
+      })
+      if (emailTaken) {
+        return { success: false, error: "このメールアドレスは既に使用されています" }
+      }
+      profile = await prisma.profile.create({
+        data: {
+          userId: input.userId,
+          email,
+          ...data,
+        },
+      })
+    }
 
     revalidatePath("/dashboard")
     revalidatePath("/dashboard/profile")
-    return { success: true, profile: created }
+    return { success: true, profile }
   } catch (e: any) {
     console.error("createProfile error:", e)
-    
-    // Prismaのエラーをより分かりやすく
-    if (e.code === 'P2002') {
-      // ユニーク制約違反
-      if (e.meta?.target?.includes('email')) {
+
+    if (e.code === "P2002") {
+      const msg = String(e.message || "")
+      if (msg.includes("email") || e.meta?.target?.includes?.("email")) {
         return { success: false, error: "このメールアドレスは既に使用されています" }
       }
-      if (e.meta?.target?.includes('userId')) {
+      if (msg.includes("userId") || e.meta?.target?.includes?.("userId")) {
         return { success: false, error: "このユーザーIDは既に使用されています" }
       }
+      return { success: false, error: "入力した情報は既に使用されています。メールアドレス・ユーザーIDをご確認ください。" }
     }
-    
+
     return { success: false, error: e?.message ?? "プロフィールの作成に失敗しました" }
   }
 }
