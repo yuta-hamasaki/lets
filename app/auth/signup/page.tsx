@@ -54,7 +54,8 @@ export default function SignUpPage() {
       })
 
       if (result.status === 'ok') {
-        setInfo('確認メールを送信しました。メール内のリンクをクリックして認証を完了してください。')
+        // メール認証待ち画面へリダイレクト
+        router.push('/auth/waiting-verification')
       } else {
         if (result.error.code === 'USER_WITH_EMAIL_ALREADY_EXISTS') {
           setError('このメールアドレスは既に登録されています')

@@ -102,18 +102,50 @@ export default function CreateProfilePage() {
         (user as any)?.emails?.[0] ??
         undefined
 
+      // バリデーション
+      if (!state.nickname.trim()) {
+        setError("ニックネームを入力してください")
+        setLoading(false)
+        return
+      }
+      if (!state.lastname.trim() || !state.firstname.trim()) {
+        setError("氏名を入力してください")
+        setLoading(false)
+        return
+      }
+      if (!state.university.trim()) {
+        setError("大学名を入力してください")
+        setLoading(false)
+        return
+      }
+      if (!state.faculty.trim()) {
+        setError("学部名を入力してください")
+        setLoading(false)
+        return
+      }
+      if (!state.grade) {
+        setError("学年を選択してください")
+        setLoading(false)
+        return
+      }
+      if (!state.desc.trim()) {
+        setError("自己紹介を入力してください")
+        setLoading(false)
+        return
+      }
+
       const result = await createProfile({
         userId: user.id,
         email,
-        nickname: state.nickname,
+        nickname: state.nickname.trim(),
         fullname,
-        university: state.university,
-        faculty: state.faculty,
+        university: state.university.trim(),
+        faculty: state.faculty.trim(),
         grade: state.grade,
-        desc: state.desc,
-        hobbies: state.hobbies?.trim() ? state.hobbies : undefined,
-        skills: state.skills?.trim() ? state.skills : undefined,
-        portfolioUrl: state.portfolioUrl?.trim() ? state.portfolioUrl : undefined,
+        desc: state.desc.trim(),
+        hobbies: state.hobbies?.trim() ? state.hobbies.trim() : undefined,
+        skills: state.skills?.trim() ? state.skills.trim() : undefined,
+        portfolioUrl: state.portfolioUrl?.trim() ? state.portfolioUrl.trim() : undefined,
       })
 
       if (result.success) {

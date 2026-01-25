@@ -29,7 +29,30 @@ export async function getProfile(userId?: string) {
 
 export async function createProfile(input: CreateProfileInput) {
   try {
-    if (!input.userId) throw new Error("UNAUTHORIZED")
+    if (!input.userId) {
+      return { success: false, error: "認証が必要です" }
+    }
+
+    // バリデーション
+    if (!input.nickname || input.nickname.trim() === "") {
+      return { success: false, error: "ニックネームは必須です" }
+    }
+    if (!input.fullname || input.fullname.trim() === "") {
+      return { success: false, error: "氏名は必須です" }
+    }
+    if (!input.university || input.university.trim() === "") {
+      return { success: false, error: "大学名は必須です" }
+    }
+    if (!input.faculty || input.faculty.trim() === "") {
+      return { success: false, error: "学部名は必須です" }
+    }
+    if (!input.grade || input.grade.trim() === "") {
+      return { success: false, error: "学年は必須です" }
+    }
+    if (!input.desc || input.desc.trim() === "") {
+      return { success: false, error: "自己紹介は必須です" }
+    }
+
     const email = input.email ?? `${input.userId}@lets.local`
 
     const created = await prisma.profile.upsert({
@@ -37,33 +60,46 @@ export async function createProfile(input: CreateProfileInput) {
       create: {
         userId: input.userId,
         email,
-        nickname: input.nickname,
-        fullname: input.fullname,
-        university: input.university,
-        faculty: input.faculty,
-        grade: input.grade,
-        desc: input.desc,
-        hobbies: input.hobbies ?? null,
-        skills: input.skills ?? null,
-        portfolioUrl: input.portfolioUrl ?? null,
+        nickname: input.nickname.trim(),
+        fullname: input.fullname.trim(),
+        university: input.university.trim(),
+        faculty: input.faculty.trim(),
+        grade: input.grade.trim(),
+        desc: input.desc.trim(),
+        hobbies: input.hobbies?.trim() || null,
+        skills: input.skills?.trim() || null,
+        portfolioUrl: input.portfolioUrl?.trim() || null,
       },
       update: {
-        nickname: input.nickname,
-        fullname: input.fullname,
-        university: input.university,
-        faculty: input.faculty,
-        grade: input.grade,
-        desc: input.desc,
-        hobbies: input.hobbies ?? null,
-        skills: input.skills ?? null,
-        portfolioUrl: input.portfolioUrl ?? null,
+        nickname: input.nickname.trim(),
+        fullname: input.fullname.trim(),
+        university: input.university.trim(),
+        faculty: input.faculty.trim(),
+        grade: input.grade.trim(),
+        desc: input.desc.trim(),
+        hobbies: input.hobbies?.trim() || null,
+        skills: input.skills?.trim() || null,
+        portfolioUrl: input.portfolioUrl?.trim() || null,
       },
     })
 
     revalidatePath("/dashboard")
+    revalidatePath("/dashboard/profile")
     return { success: true, profile: created }
   } catch (e: any) {
     console.error("createProfile error:", e)
-    return { success: false, error: e?.message ?? "CREATE_FAILED" }
+    
+    // Prismaのエラーをより分かりやすく
+    if (e.code === 'P2002') {
+      // ユニーク制約違反
+      if (e.meta?.target?.includes('email')) {
+        return { success: false, error: "このメールアドレスは既に使用されています" }
+      }
+      if (e.meta?.target?.includes('userId')) {
+        return { success: false, error: "このユーザーIDは既に使用されています" }
+      }
+    }
+    
+    return { success: false, error: e?.message ?? "プロフィールの作成に失敗しました" }
   }
 }
