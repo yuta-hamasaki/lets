@@ -49,7 +49,7 @@ export default function SignInPage() {
       })
       
       if (result.status === 'ok') {
-        router.push('/create/profile')
+        router.push('/dashboard')
       } else {
         setIsLoading(false)
         if (result.error.code === 'EMAIL_PASSWORD_MISMATCH') {

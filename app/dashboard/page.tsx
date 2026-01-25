@@ -32,7 +32,8 @@ export default function DashboardPage() {
     async function fetchProfile() {
       try {
         hasCheckedProfile.current = true
-        const profileData = await getProfile()
+        if (!user) return
+        const profileData = await getProfile(user.id)
         setProfile(profileData)
         
         if (!profileData) {

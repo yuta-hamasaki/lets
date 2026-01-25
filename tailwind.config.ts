@@ -18,6 +18,8 @@ export default {
           900: "#0c4a6e",
           950: "#082f49",
         },
+        "primary-blue": "#3B82F6",
+        "primary-pink": "#EC4899",
         gray: {
           50: "#f8fafc",
           100: "#f1f5f9",

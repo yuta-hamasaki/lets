@@ -35,7 +35,7 @@ export const UserProfileCard: React.FC<UserProfileCardProps> = ({
     async function load() {
       setLoading(true)
       try {
-        const res = await fetch(`/api/profiles/${profileIdOrUserId}`, {
+        const res = await fetch(`/api/profile/${profileIdOrUserId}`, {
           cache: "no-store",
         })
         if (!res.ok) throw new Error("FAILED_TO_FETCH_PROFILE")

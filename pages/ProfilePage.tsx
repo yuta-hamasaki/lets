@@ -20,7 +20,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ userId, onBack }) => {
 
     (async () => {
       setLoading(true);
-      const res = await fetch(`/api/profile/${userId}`, { cache: 'no-store' });
+      const res = await fetch(`/api/profile/${userId}?includePosts=true`, { cache: 'no-store' });
 
       if (!res.ok) {
         if (!cancelled) setUser(null);
