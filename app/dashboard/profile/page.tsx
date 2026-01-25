@@ -20,7 +20,13 @@ export default function Profile() {
   
 
       useEffect(() => {
+          if (user === undefined) return
+              if (user === null) {
+      router.push("/auth/signup")
+      return
+    }
         // ユーザーが存在しない場合はサインアップページへ
+
         if (!user) {
           router.push('/auth/signup')
           return
@@ -32,7 +38,10 @@ export default function Profile() {
         async function fetchProfile() {
           setLoading(true)
           try {
-            const profileData = await getProfile()
+            if (!user) return
+            const profileData = await getProfile(user.id)
+            console.log( profileData)
+
             setProfile(profileData)
             setCheckedProfile(true)
             
